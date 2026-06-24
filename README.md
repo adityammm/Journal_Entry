@@ -6,8 +6,6 @@ synchronously over HTTP (clients → services) and asynchronously over **Apache 
 collections per service — and a shared **JWT signing secret**, so tokens issued by `user-service`
 are trusted by `journal-service`.
 
-> The original monolith is preserved in [`JournalEntry/`](JournalEntry/) for reference.
-
 ---
 
 ## Architecture
