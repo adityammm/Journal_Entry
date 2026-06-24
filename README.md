@@ -10,31 +10,27 @@ are trusted by `journal-service`.
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    Client(["Client (curl / UI)"])
+    US["user-service :8081"]
+    JS["journal-service :8082"]
+    NS["notification-service :8083"]
+    Kafka{{"Apache Kafka · topics: user-events, journal-events"}}
+    Mongo[("MongoDB Atlas (external) · db journaldb · users, journal_entries")]
+
+    Client -- "POST /auth/* (returns JWT)" --> US
+    Client -- "Bearer JWT + /journal/*" --> JS
+
+    US -- "writes users" --> Mongo
+    JS -- "writes journal_entries" --> Mongo
+
+    US -- "produces USER_REGISTERED" --> Kafka
+    JS -- "produces JOURNAL_CREATED" --> Kafka
+    Kafka -- "consumes journal-events" --> NS
 ```
-                                  ┌──────────────────────────────────────┐
-                                  │              Apache Kafka              │
-                                  │   topics: user-events, journal-events  │
-                                  └───────▲───────────────────┬───────────┘
-                  USER_REGISTERED         │                   │  JOURNAL_CREATED
-                  (user-events)           │                   │  (journal-events)
-                                          │                   │
-   ┌────────────┐  POST /auth/*   ┌───────┴────────┐  /journal/*   ┌──────────────────────┐
-   │            │ ───────────────▶│  user-service  │   (JWT)       │   journal-service     │
-   │   Client   │   returns JWT   │     :8081      │◀───────────── │        :8082          │
-   │  (curl/UI) │ ───────────────────────────────────────────────▶│  validates JWT,       │
-   │            │   Bearer token + /journal/*                      │  CRUD journal entries │
-   └────────────┘                 └───────┬────────┘               └───────────┬──────────┘
-                                          │ writes                             │ writes
-                                          ▼                                    ▼
-                                  ┌───────────────┐    ┌──────────────────────────────────┐
-                                  │ notification- │    │      MongoDB Atlas (external)      │
-                                  │   service     │    │   db: journaldb                   │
-                                  │    :8083      │    │   collections: users,             │
-                                  │ consumes      │    │                journal_entries    │
-                                  │ journal-events│    └──────────────────────────────────┘
-                                  │ → logs it     │
-                                  └───────────────┘
-```
+
+> `journal-service` validates the JWT locally with the shared secret — it does **not** call `user-service`.
 
 | Service | Port | Responsibilities | Kafka |
 |---|---|---|---|
