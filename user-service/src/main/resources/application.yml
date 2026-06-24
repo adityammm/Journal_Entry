@@ -1,0 +1,34 @@
+server:
+  port: ${SERVER_PORT}
+
+spring:
+  application:
+    name: user-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      auto-index-creation: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        # Emit plain JSON without __TypeId__ headers so other services can deserialize freely.
+        spring.json.add.type.headers: false
+
+# Shared with journal-service - tokens issued here must validate there.
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+app:
+  kafka:
+    topics:
+      user-events: user-events
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

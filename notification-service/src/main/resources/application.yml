@@ -1,0 +1,29 @@
+server:
+  port: ${SERVER_PORT}
+
+spring:
+  application:
+    name: notification-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER}
+    consumer:
+      group-id: notification-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        # Producer sends plain JSON (no type headers), so tell the deserializer the target type.
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: com.journalapp.notificationservice.event.JournalCreatedEvent
+        spring.json.trusted.packages: "*"
+
+app:
+  kafka:
+    topics:
+      journal-events: journal-events
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

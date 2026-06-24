@@ -1,0 +1,9 @@
+# Secrets / local config
+.env
+
+# Build output
+target/
+JournalEntry/
+# IDE
+.idea/
+*.iml
